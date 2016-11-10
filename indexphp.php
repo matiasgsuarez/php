@@ -3,7 +3,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 
 define('APPLICATION_NAME', 'Drive API PHP Quickstart');
-define('CREDENTIALS_PATH', '~/.credentials/drive-php-quickstart.json');
+define('CREDENTIALS_PATH',__DIR__ . '/CREDENTIALS_PATH');
 define('CLIENT_SECRET_PATH', __DIR__ . '/client_secret.json');
 // If modifying these scopes, delete your previously saved credentials
 // at ~/.credentials/drive-php-quickstart.json
@@ -22,7 +22,13 @@ if (php_sapi_name() != 'cli') {
 function getClient() {
   $client = new Google_Client();
   $client->setApplicationName(APPLICATION_NAME);
-  $client->setScopes(SCOPES);
+  $client->addScope("https://www.googleapis.com/auth/drive"); 
+  $client->addScope("https://www.googleapis.com/auth/drive.file"); 
+  $client->addScope("https://www.googleapis.com/auth/drive.appdata"); 
+  $client->addScope("https://www.googleapis.com/auth/drive.readonly");
+  $client->addScope("https://www.googleapis.com/auth/drive.metadata.readonly");
+  $client->addScope("https://www.googleapis.com/auth/drive.metadata");
+  $client->addScope("https://www.googleapis.com/auth/drive.photos.readonly");
   $client->setAuthConfig(CLIENT_SECRET_PATH);
   $client->setAccessType('offline');
 
@@ -89,3 +95,5 @@ if (count($results->getFiles()) == 0) {
     printf("%s (%s)\n", $file->getName(), $file->getId());
   }
 }
+
+?>
