@@ -1,6 +1,4 @@
 <?php
-var_dump($_SESSION);
-
 require_once __DIR__ . '/vendor/autoload.php';
 
 define('APPLICATION_NAME', 'Drive API PHP Quickstart');
@@ -79,35 +77,11 @@ function expandHomeDirectory($path) {
 		$homeDirectory = getenv('HOMEDRIVE') . getenv('HOMEPATH');
 	}
 	return str_replace('~', realpath($homeDirectory), $path);
-}
-*/
+}*/
 
 // Get the API client and construct the service object.
 $client = getClient();
 $service = new Google_Service_Drive($client);
-
-if ($_GET != null){
-	// Exportar archivo
-	$fileId = $_GET['id'];
-	$content = $service->files->export($fileId, 'application/pdf', array( 'alt' => 'media' ));
-
-	// Ver lista de usuarios con permisos
-	$request = $service->permissions->listPermissions($fileId);
-	var_dump("El archivo está siendo compartido por:");
-	foreach ($request as $r) {
-		var_dump($r);
-		echo $r->id."-";
-		$request2 = $service->permissions->get($fileId, $r->id);
-		var_dump($request2);
-		echo $r->emailAddress;
-	}
-	
-	// Borrar el Permiso
-	// $service->permissions->delete($fileId, $permisoId);
-}
-
-	
-
 
 if (isset($_POST['crear_archivo'])) {
 	$nombre = $_POST['nombre'];
@@ -119,47 +93,13 @@ if (isset($_POST['crear_archivo'])) {
 		// 'parents[]' => lista de IDS padres
 	);
 	$fileMetadata = new Google_Service_Drive_DriveFile($atributos);
-	$file = $service->files->create($fileMetadata, array('fields' => 'id,name,description')); // Devuelve un objeto file, sólo los campos "id, name, descpription"
+	$file = $service->files->create($fileMetadata, array('fields' => 'id,name,description')); // Devuelve un objeto file, sólo los campos "id, name, descpription"		
+}else {
+	$fileId = $_GET['id'];
+	$file = $service->files->get($fileId, array('fields' => 'id,name,description,webContentLink,webViewLink'));
 }
-else {
-	// Para compartir archivos
-	if (isset($_POST['compartir_archivo'])) {
-		$fileId = $_POST['id'];
-		$email = $_POST['email'];
-		$service->getClient()->setUseBatch(true);
-		$batch = $service->createBatch();
-		$userPermission = new Google_Service_Drive_Permission(array(
-			'type' => 'user',
-			'role' => 'writer',
-			'emailAddress' => $email
-		));
-		$request = $service->permissions->create($fileId, $userPermission, array('fields' => 'id,emailAddress'));
-		$batch->add($request, 'user');
-		$results = $batch->execute();
-		foreach ($results as $result) {
-			if ($result instanceof Google_Service_Exception) {
-				// Handle error
-				var_dump($result);
-			} else {
-				var_dump("Permission ID: %s\n", $result->id);
-				var_dump($result);
-			}
-		}	
-	}else{
-		// Listar archivos
-		$optParams = array(
-			'corpus' => 'user',
-			'pageSize' => 20,
-			//'orderBy' => 'folder',
-			'fields' => 'nextPageToken, files(id, name)'
-		);
-		$results = $service->files->listFiles($optParams);
-		
-		echo $results['kind'].'\n	';
-		echo $results['nextPageToken'].'\n	';
-		//var_dump($results->getFiles());
-	}
-}
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -174,12 +114,6 @@ else {
 			<script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
 		<![endif]-->
 		<link href="css/styles.css" rel="stylesheet">
-		
-				<style>
-			td,th {
-				height: 40px;
-			}
-		</style>
 	</head>
 	<body>
 <div class="container" class="margin-left:399px; margin-right:399px;">	
@@ -199,7 +133,7 @@ else {
     </div>
     <div class="collapse navbar-collapse">
       <ul class="nav navbar-nav">
-        <li class="active"><a href="#">Lista de archivos</a></li>
+        <li class="active"><a href="index.php">Lista de archivos</a></li>
         <li><a href="#contact">Contacto</a></li>
       </ul>
     </div><!--/.nav-collapse -->
@@ -208,57 +142,41 @@ else {
 
 <div class="container">
   <div class="text-center">
-    <h1>Lista de archivos</h1>
+    <h1>Archivo</h1>
     <div class="row">
-		<div class="col-md-7" style="padding-left:100px;">
-			<h3 style="padding-bottom: 15px"> Documentos del drive </h3>
-			<table>
-				<tr>
-					<th style="width:80%">Nombre</th>
-					<th>Id</th>
-				</tr>
-				<?php
-					if (!isset($_POST['crear_archivo'])) {
-						if (!isset($_POST['compartir_archivo'])) {
-							if (count($results->getFiles()) == 0) {
-								echo "No se encontraron archivos.\n";
-							} else {
-								foreach ($results->getFiles() as $file) {
-								
-									echo "<tr><td style='	width:80%'> $file->name </td><td><a href='archivo.php?id=".$file->id."'>Ver información</a></td></tr>";
-								}
-							}
-						}
-						echo "</table>";
-					}					
-					else {
-				?>
-				
-						<div class="col-md-4">
-						
-						<?php echo "Se ha creado el archivo " . $file->name . " \n ID:" .$file->id . "  ". $file->description; ?>
-						<form method="post">
-							Ingrese el email: <input type="text" name="email"/>
-							<input type="hidden" name="id" value="<?php echo $file->id ?>"/>
-							<button type="submit" name="compartir_archivo" class="btn btn-primary btn-block btn-large">Compartir documento</button></div>
-						</form>
-				<?php } ?>
+		<?php if (isset($_POST['crear_archivo'])) {
+			echo "<p>Se ha creado el archivo</p>";
+		}
+		?>
+		<h3 style="padding-bottom: 15px"> Nombre: <?php echo $file->name; ?> </h3>
+	</div>
+	<div class="row">
+		<div class="col-md-7">
+		<h3>Atributos del archivo</h3>
+			<h4 style="margin-top:20px;padding-bottom: 4px"> Nombre </h4>
+			<p><?php echo $file->name; ?> </p>
+			<h4 style="padding-bottom: 4px"> Descripción </h4>
+			<p><?php echo $file->description; ?> </p>
+			<h4 style="margin-top:17px;"> Editar archivo </h4>
+			<a href="<?php echo $file->webViewLink?>"> Haga click para editar el documento </a>
+			<h4 style="margin-top:15px;padding-bottom: 0px"> Permisos </h4>
+			<a href="permisos.php?id=<?php echo $file->id; ?>">Ver usuarios con permisos </a>
 		</div>
 		<div class="col-md-4" style="float:right;">
-			<h3 style="padding-bottom:15px; "> Crear un nuevo documento </h3>
-			<form action="archivo.php" method="post">
-				<p>Ingrese el nombre del nuevo archivo</p>
-				<input type="text" name="nombre"/> 
-				<button type="submit" name="crear_archivo" class="btn btn-primary btn-block btn-large" style="margin-top:15px;">Crear un archivo</button>
-			</form>
-		</div>
-
+			<h4 style="padding-bottom: 15px"> Compartir con: </h4>
+				<form method="post">
+					Ingrese el email: <input type="text" name="email"/>
+					<input type="hidden" name="id" value="<?php echo $file->id ?>"/>
+					<button type="submit" name="compartir_archivo" class="btn btn-primary btn-block btn-large" style="margin-top:15px;">Compartir documento</button></div>
+				</form>
+			</div>
 	</div>
-  </div>
+  
   <div class="row">
-	<div class="footer" style="margin-top:20px; background-color:#611b1b; height:40px">
+	<div class="footer" style="margin-top:20px; background-color:#611b1b; height:40px; color:FFF;">
 		<p style="color:FFF; padding-top:10px; padding-left:425px"> Entrega trabajo Cloud Computing - Suárez Matías</p>
 	</div>
+  </div>
   </div>
   
   
