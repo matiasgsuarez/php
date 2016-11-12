@@ -1,166 +1,43 @@
 <?php
-var_dump($_SESSION);
+session_start();
 
 require_once __DIR__ . '/vendor/autoload.php';
-
 define('APPLICATION_NAME', 'Drive API PHP Quickstart');
-define('CREDENTIALS_PATH', __DIR__ . '/CREDENTIALS_PATH.json');
 define('CLIENT_SECRET_PATH', __DIR__ . '/client_secret.json');
 
-/**
- * Returns an authorized API client.
- * @return Google_Client the authorized client object
- */
-function getClient() {
-	$client = new Google_Client();
-	$client->setApplicationName(APPLICATION_NAME);
-	$client->addScope("https://www.googleapis.com/auth/drive"); 		
-	$client->addScope("https://www.googleapis.com/auth/drive.file"); 	
-	$client->addScope("https://www.googleapis.com/auth/drive.appdata"); 
-	$client->addScope("https://www.googleapis.com/auth/drive.readonly");
-	$client->addScope("https://www.googleapis.com/auth/drive.metadata.readonly");
-	$client->addScope("https://www.googleapis.com/auth/drive.metadata");
-	$client->addScope("https://www.googleapis.com/auth/drive.photos.readonly");
-	$client->setAuthConfig(CLIENT_SECRET_PATH);
+$url_success = "http://php-matias-prueba11.44fs.preview.openshiftapps.com/lista.php";
 
-	if (isset($_SESSION['access_token']) && $_SESSION['access_token']) {
-		$client->setAccessToken($_SESSION['access_token']);
-	} else {
-		echo "No se puedieron recuperar las credenciales";
-		//$redirect_uri = 'http://localhost/cloud/login.php';
-		//header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
+$client = new Google_Client();
+$client->setApplicationName(APPLICATION_NAME);
+$client->setAuthConfig(CLIENT_SECRET_PATH);
+$client->addScope("https://www.googleapis.com/auth/drive"); 				// Autorización para crear archivo
+$client->addScope("https://www.googleapis.com/auth/drive.file"); 			// Autorización para crear archivo
+$client->addScope("https://www.googleapis.com/auth/drive.appdata"); 		// Autorización para crear archivo
+$client->addScope("https://www.googleapis.com/auth/drive.readonly");
+$client->addScope("https://www.googleapis.com/auth/drive.metadata.readonly");
+$client->addScope("https://www.googleapis.com/auth/drive.metadata");
+$client->addScope("https://www.googleapis.com/auth/drive.photos.readonly");
+$redirect_uri = 'http://127.0.0.1/cloud/login.php';
+$client->setRedirectUri($redirect_uri);
+
+if (!isset($_GET['code'])) {
+	// Verifica las credenciales
+	if (isset($_GET['login'])){
+		$auth_url = $client->createAuthUrl();
+		header('Location: ' . filter_var($auth_url, FILTER_SANITIZE_URL));
 	}
-	return $client;
+} else {
+	// Si se logueo correctamente
+	$client->authenticate($_GET['code']);
+	$_SESSION['access_token'] = $client->getAccessToken();
+	var_dump($_SESSION);
 	
-	/*
-	$client->setAccessType('offline');
-
-  // Load previously authorized credentials from a file.
-  $credentialsPath = expandHomeDirectory(CREDENTIALS_PATH);
-  if (file_exists($credentialsPath)) {
-    $accessToken = json_decode(file_get_contents($credentialsPath), true);
-  } else {
-    // Request authorization from the user.
-    $authUrl = $client->createAuthUrl();
-    printf("Open the following link in your browser:\n%s\n", $authUrl);
-    print 'Enter verification code: ';
-    $authCode = trim(fgets(STDIN));
-
-    // Exchange authorization code for an access token.
-    $accessToken = $client->fetchAccessTokenWithAuthCode($authCode);
-
-    // Store the credentials to disk.
-    if(!file_exists(dirname($credentialsPath))) {
-      mkdir(dirname($credentialsPath), 0700, true);
-    }
-    file_put_contents($credentialsPath, json_encode($accessToken));
-    printf("Credentials saved to %s\n", $credentialsPath);
-  }
-  $client->setAccessToken($accessToken);
-
-  // Refresh the token if it's expired.
-  if ($client->isAccessTokenExpired()) {
-    $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
-    file_put_contents($credentialsPath, json_encode($client->getAccessToken()));
-  }
-  
-  return $client;
-}
-
-/**
- * Expands the home directory alias '~' to the full path.
- * @param string $path the path to expand.
- * @return string the expanded path.
- *
- 
-function expandHomeDirectory($path) {
-	$homeDirectory = getenv('HOME');
-	if (empty($homeDirectory)) {
-		$homeDirectory = getenv('HOMEDRIVE') . getenv('HOMEPATH');
-	}
-	return str_replace('~', realpath($homeDirectory), $path);
-}
-*/
-
-// Get the API client and construct the service object.
-$client = getClient();
-$service = new Google_Service_Drive($client);
-
-if ($_GET != null){
-	// Exportar archivo
-	$fileId = $_GET['id'];
-	$content = $service->files->export($fileId, 'application/pdf', array( 'alt' => 'media' ));
-
-	// Ver lista de usuarios con permisos
-	$request = $service->permissions->listPermissions($fileId);
-	var_dump("El archivo está siendo compartido por:");
-	foreach ($request as $r) {
-		var_dump($r);
-		echo $r->id."-";
-		$request2 = $service->permissions->get($fileId, $r->id);
-		var_dump($request2);
-		echo $r->emailAddress;
-	}
-	
-	// Borrar el Permiso
-	// $service->permissions->delete($fileId, $permisoId);
-}
-
-	
-
-
-if (isset($_POST['crear_archivo'])) {
-	$nombre = $_POST['nombre'];
-	$description = "Este es un archivo de prueba";
-	$atributos = array(
-		'name'=>$nombre,
-		'mimeType' => 'application/vnd.google-apps.document',
-		'description' => $description,
-		// 'parents[]' => lista de IDS padres
-	);
-	$fileMetadata = new Google_Service_Drive_DriveFile($atributos);
-	$file = $service->files->create($fileMetadata, array('fields' => 'id,name,description')); // Devuelve un objeto file, sólo los campos "id, name, descpription"
-}
-else {
-	// Para compartir archivos
-	if (isset($_POST['compartir_archivo'])) {
-		$fileId = $_POST['id'];
-		$email = $_POST['email'];
-		$service->getClient()->setUseBatch(true);
-		$batch = $service->createBatch();
-		$userPermission = new Google_Service_Drive_Permission(array(
-			'type' => 'user',
-			'role' => 'writer',
-			'emailAddress' => $email
-		));
-		$request = $service->permissions->create($fileId, $userPermission, array('fields' => 'id,emailAddress'));
-		$batch->add($request, 'user');
-		$results = $batch->execute();
-		foreach ($results as $result) {
-			if ($result instanceof Google_Service_Exception) {
-				// Handle error
-				var_dump($result);
-			} else {
-				var_dump("Permission ID: %s\n", $result->id);
-				var_dump($result);
-			}
-		}	
-	}else{
-		// Listar archivos
-		$optParams = array(
-			'corpus' => 'user',
-			'pageSize' => 20,
-			//'orderBy' => 'folder',
-			'fields' => 'nextPageToken, files(id, name)'
-		);
-		$results = $service->files->listFiles($optParams);
-		
-		echo $results['kind'].'\n	';
-		echo $results['nextPageToken'].'\n	';
-		//var_dump($results->getFiles());
-	}
+	$redirect_uri = 'index.php';
+	header('Location: ' . $redirect_uri);
+	exit();
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -208,56 +85,11 @@ else {
 
 <div class="container">
   <div class="text-center">
-    <h1>Lista de archivos</h1>
+    <h1>Login</h1>
     <div class="row">
-		<div class="col-md-7" style="padding-left:100px;">
-			<h3 style="padding-bottom: 15px"> Documentos del drive </h3>
-			<table>
-				<tr>
-					<th style="width:80%">Nombre</th>
-					<th>Id</th>
-				</tr>
-				<?php
-					if (!isset($_POST['crear_archivo'])) {
-						if (!isset($_POST['compartir_archivo'])) {
-							if (count($results->getFiles()) == 0) {
-								echo "No se encontraron archivos.\n";
-							} else {
-								foreach ($results->getFiles() as $file) {
-								
-									echo "<tr><td style='	width:80%'> $file->name </td><td><a href='archivo.php?id=".$file->id."'>Ver información</a></td></tr>";
-								}
-							}
-						}
-						echo "</table>";
-					}					
-					else {
-				?>
-				
-						<div class="col-md-4">
-						
-						<?php echo "Se ha creado el archivo " . $file->name . " \n ID:" .$file->id . "  ". $file->description; ?>
-						<form method="post">
-							Ingrese el email: <input type="text" name="email"/>
-							<input type="hidden" name="id" value="<?php echo $file->id ?>"/>
-							<button type="submit" name="compartir_archivo" class="btn btn-primary btn-block btn-large">Compartir documento</button></div>
-						</form>
-				<?php } ?>
-		</div>
-		<div class="col-md-4" style="float:right;">
-			<h3 style="padding-bottom:15px; "> Crear un nuevo documento </h3>
-			<form action="archivo.php" method="post">
-				<p>Ingrese el nombre del nuevo archivo</p>
-				<input type="text" name="nombre"/> 
-				<button type="submit" name="crear_archivo" class="btn btn-primary btn-block btn-large" style="margin-top:15px;">Crear un archivo</button>
-			</form>
-		</div>
-
-	</div>
-  </div>
-  <div class="row">
-	<div class="footer" style="margin-top:20px; background-color:#611b1b; height:40px">
-		<p style="color:FFF; padding-top:10px; padding-left:425px"> Entrega trabajo Cloud Computing - Suárez Matías</p>
+			<h4 style="padding-bottom: 15px"> Ud. debe iniciar sesión </h4>
+			<p> Haga click en el siguiente enlace <a href="?login">CLICK</a></p>
+		
 	</div>
   </div>
   

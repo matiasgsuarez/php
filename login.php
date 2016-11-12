@@ -5,7 +5,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 define('APPLICATION_NAME', 'Drive API PHP Quickstart');
 define('CLIENT_SECRET_PATH', __DIR__ . '/client_secret.json');
 
-$url_success = "http://localhost/cloud/prueba.php";
+$url_success = "http://php-matias-prueba11.44fs.preview.openshiftapps.com/lista.php";
 
 $client = new Google_Client();
 $client->setApplicationName(APPLICATION_NAME);

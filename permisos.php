@@ -158,7 +158,7 @@ if (isset($_POST['compartir_archivo'])){
     </div>
     <div class="collapse navbar-collapse">
       <ul class="nav navbar-nav">
-        <li class="active"><a href="index.php">Lista de archivos</a></li>
+        <li class="active"><a href="lista.php">Lista de archivos</a></li>
         <li><a href="#contact">Contacto</a></li>
       </ul>
     </div><!--/.nav-collapse -->
