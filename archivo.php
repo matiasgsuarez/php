@@ -47,7 +47,7 @@ if (isset($_POST['crear_archivo'])) {
 		// 'parents[]' => lista de IDS padres
 	);
 	$fileMetadata = new Google_Service_Drive_DriveFile($atributos);
-	$file = $service->files->create($fileMetadata, array('fields' => 'id,name,description')); // Devuelve un objeto file, sólo los campos "id, name, descpription"		
+	$file = $service->files->create($fileMetadata, array('fields' => 'id,name,description,webContentLink,webViewLink')); // Devuelve un objeto file, sólo los campos "id, name, descpription"		
 }else {
 	$fileId = $_GET['id'];
 	$file = $service->files->get($fileId, array('fields' => 'id,name,description,webContentLink,webViewLink'));
