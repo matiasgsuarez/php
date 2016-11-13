@@ -22,7 +22,7 @@ function getClient() {
 	$client->addScope("https://www.googleapis.com/auth/drive.photos.readonly");
 	$client->setAuthConfig(CLIENT_SECRET_PATH);
 
-	if (isset($_SESSION['access_token']) {//&& $_SESSION['access_token']) {
+	if (isset($_SESSION['access_token']) && $_SESSION['access_token']) {
 		$client->setAccessToken($_SESSION['access_token']);
 	} else {
 		echo "No se puedieron recuperar las credenciales";
