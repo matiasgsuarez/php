@@ -118,7 +118,7 @@ if (isset($_POST['crear_archivo'])) {
 		</div>
 		<div class="col-md-4" style="float:right;">
 			<h4 style="padding-bottom: 15px"> Compartir con: </h4>
-				<form action="permisos.php" method="post">
+				<form action="permisos.php?id=<?php echo $file->id ?>" method="post">
 					Ingrese el email: <input type="text" name="email"/>
 					<input type="hidden" name="id" value="<?php echo $file->id ?>"/>
 					<button type="submit" name="compartir_archivo" class="btn btn-primary btn-block btn-large" style="margin-top:15px;">Compartir documento</button></div>
