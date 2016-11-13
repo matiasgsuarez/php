@@ -118,7 +118,7 @@ if (isset($_POST['crear_archivo'])) {
 		</div>
 		<div class="col-md-4" style="float:right;">
 			<h4 style="padding-bottom: 15px"> Compartir con: </h4>
-				<form method="post">
+				<form action="permisos.php" method="post">
 					Ingrese el email: <input type="text" name="email"/>
 					<input type="hidden" name="id" value="<?php echo $file->id ?>"/>
 					<button type="submit" name="compartir_archivo" class="btn btn-primary btn-block btn-large" style="margin-top:15px;">Compartir documento</button></div>
@@ -128,7 +128,7 @@ if (isset($_POST['crear_archivo'])) {
   
   <div class="row">
 	<div class="footer" style="margin-top:20px; background-color:#611b1b; height:40px; color:FFF;">
-		<p style="color:FFF; padding-top:10px; padding-left:425px"> Entrega trabajo Cloud Computing - Suárez Matías</p>
+		<p style="color:#FFF; padding-top:10px; padding-left:425px"> Entrega trabajo Cloud Computing - Suárez Matías</p>
 	</div>
   </div>
   </div>

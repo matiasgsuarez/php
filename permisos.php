@@ -165,7 +165,7 @@ if (isset($_POST['compartir_archivo'])){
   </div>
   <div class="row">
 	<div class="footer" style="margin-top:20px; background-color:#611b1b; height:40px">
-		<p style="color:FFF; padding-top:10px; padding-left:425px"> Entrega trabajo Cloud Computing - Suárez Matías</p>
+		<p style="color:#FFF; padding-top:10px; padding-left:425px"> Entrega trabajo Cloud Computing - Suárez Matías</p>
 	</div>
   </div>  
   

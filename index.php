@@ -79,14 +79,21 @@ if (!isset($_GET['code'])) {
 </div>
 
 <div class="container">
+	<div class="row">
   <div class="text-center">
     <h1>Login</h1>
-    <div class="row">
+    
 			<h4 style="padding-bottom: 15px"> Ud. debe iniciar sesión </h4>
 			<p> Haga click en el siguiente enlace <a href="?login">CLICK</a></p>
 		
 	</div>
+	</div>
+	<div class="row">
+	<div class="footer" style="margin-top:20px; background-color:#611b1b; height:40px">
+		<p style="color:#FFF; padding-top:10px; padding-left:425px"> Entrega trabajo Cloud Computing - Suárez Matías</p>
+	</div>
   </div>
+  
   
   
   
