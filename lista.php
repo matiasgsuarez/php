@@ -1,10 +1,10 @@
 <?php
+session_start();
 var_dump($_SESSION);
 
 require_once __DIR__ . '/vendor/autoload.php';
 
 define('APPLICATION_NAME', 'Drive API PHP Quickstart');
-define('CREDENTIALS_PATH', __DIR__ . '/CREDENTIALS_PATH.json');
 define('CLIENT_SECRET_PATH', __DIR__ . '/client_secret.json');
 
 /**
