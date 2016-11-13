@@ -5,8 +5,6 @@ require_once __DIR__ . '/vendor/autoload.php';
 define('APPLICATION_NAME', 'Drive API PHP Quickstart');
 define('CLIENT_SECRET_PATH', __DIR__ . '/client_secret.json');
 
-$url_success = "http://php-matias-prueba11.44fs.preview.openshiftapps.com";
-
 $client = new Google_Client();
 $client->setApplicationName(APPLICATION_NAME);
 $client->setAuthConfig(CLIENT_SECRET_PATH);
@@ -17,7 +15,8 @@ $client->addScope("https://www.googleapis.com/auth/drive.readonly");
 $client->addScope("https://www.googleapis.com/auth/drive.metadata.readonly");
 $client->addScope("https://www.googleapis.com/auth/drive.metadata");
 $client->addScope("https://www.googleapis.com/auth/drive.photos.readonly");
-$redirect_uri = 'http://127.0.0.1/cloud/login.php';
+//$redirect_uri = 'http://127.0.0.1/cloud/login.php';
+$redirect_uri = "http://php-matias-prueba11.44fs.preview.openshiftapps.com/index.php";
 $client->setRedirectUri($redirect_uri);
 
 if (!isset($_GET['code'])) {
