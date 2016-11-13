@@ -29,7 +29,6 @@ if (!isset($_GET['code'])) {
 	// Si se logueo correctamente
 	$client->authenticate($_GET['code']);
 	$_SESSION['access_token'] = $client->getAccessToken();
-	var_dump($_SESSION);
 	
 	$redirect_uri = 'lista.php';
 	header('Location: ' . $redirect_uri);
