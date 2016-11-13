@@ -31,56 +31,8 @@ function getClient() {
 		//header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
 	}
 	return $client;
-	
-	/*
-	$client->setAccessType('offline');
+}	
 
-  // Load previously authorized credentials from a file.
-  $credentialsPath = expandHomeDirectory(CREDENTIALS_PATH);
-  if (file_exists($credentialsPath)) {
-    $accessToken = json_decode(file_get_contents($credentialsPath), true);
-  } else {
-    // Request authorization from the user.
-    $authUrl = $client->createAuthUrl();
-    printf("Open the following link in your browser:\n%s\n", $authUrl);
-    print 'Enter verification code: ';
-    $authCode = trim(fgets(STDIN));
-
-    // Exchange authorization code for an access token.
-    $accessToken = $client->fetchAccessTokenWithAuthCode($authCode);
-
-    // Store the credentials to disk.
-    if(!file_exists(dirname($credentialsPath))) {
-      mkdir(dirname($credentialsPath), 0700, true);
-    }
-    file_put_contents($credentialsPath, json_encode($accessToken));
-    printf("Credentials saved to %s\n", $credentialsPath);
-  }
-  $client->setAccessToken($accessToken);
-
-  // Refresh the token if it's expired.
-  if ($client->isAccessTokenExpired()) {
-    $client->fetchAccessTokenWithRefreshToken($client->getRefreshToken());
-    file_put_contents($credentialsPath, json_encode($client->getAccessToken()));
-  }
-  
-  return $client;
-}
-
-/**
- * Expands the home directory alias '~' to the full path.
- * @param string $path the path to expand.
- * @return string the expanded path.
- *
- 
-function expandHomeDirectory($path) {
-	$homeDirectory = getenv('HOME');
-	if (empty($homeDirectory)) {
-		$homeDirectory = getenv('HOMEDRIVE') . getenv('HOMEPATH');
-	}
-	return str_replace('~', realpath($homeDirectory), $path);
-}
-*/
 
 // Get the API client and construct the service object.
 $client = getClient();
@@ -89,25 +41,7 @@ $service = new Google_Service_Drive($client);
 if ($_GET != null){
 	// Exportar archivo
 	$fileId = $_GET['id'];
-	$content = $service->files->export($fileId, 'application/pdf', array( 'alt' => 'media' ));
-
-	// Ver lista de usuarios con permisos
-	$request = $service->permissions->listPermissions($fileId);
-	var_dump("El archivo está siendo compartido por:");
-	foreach ($request as $r) {
-		var_dump($r);
-		echo $r->id."-";
-		$request2 = $service->permissions->get($fileId, $r->id);
-		var_dump($request2);
-		echo $r->emailAddress;
-	}
-	
-	// Borrar el Permiso
-	// $service->permissions->delete($fileId, $permisoId);
 }
-
-	
-
 
 if (isset($_POST['crear_archivo'])) {
 	$nombre = $_POST['nombre'];
@@ -122,43 +56,14 @@ if (isset($_POST['crear_archivo'])) {
 	$file = $service->files->create($fileMetadata, array('fields' => 'id,name,description')); // Devuelve un objeto file, sólo los campos "id, name, descpription"
 }
 else {
-	// Para compartir archivos
-	if (isset($_POST['compartir_archivo'])) {
-		$fileId = $_POST['id'];
-		$email = $_POST['email'];
-		$service->getClient()->setUseBatch(true);
-		$batch = $service->createBatch();
-		$userPermission = new Google_Service_Drive_Permission(array(
-			'type' => 'user',
-			'role' => 'writer',
-			'emailAddress' => $email
-		));
-		$request = $service->permissions->create($fileId, $userPermission, array('fields' => 'id,emailAddress'));
-		$batch->add($request, 'user');
-		$results = $batch->execute();
-		foreach ($results as $result) {
-			if ($result instanceof Google_Service_Exception) {
-				// Handle error
-				var_dump($result);
-			} else {
-				var_dump("Permission ID: %s\n", $result->id);
-				var_dump($result);
-			}
-		}	
-	}else{
-		// Listar archivos
-		$optParams = array(
-			'corpus' => 'user',
-			'pageSize' => 20,
-			//'orderBy' => 'folder',
-			'fields' => 'nextPageToken, files(id, name)'
-		);
-		$results = $service->files->listFiles($optParams);
-		
-		echo $results['kind'].'\n	';
-		echo $results['nextPageToken'].'\n	';
-		//var_dump($results->getFiles());
-	}
+	// Listar archivos
+	$optParams = array(
+		'corpus' => 'user',
+		'pageSize' => 20,
+		//'orderBy' => 'folder',
+		'fields' => 'nextPageToken, files(id, name)'
+	);
+	$results = $service->files->listFiles($optParams);
 }
 ?>
 <!DOCTYPE html>
