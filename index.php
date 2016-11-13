@@ -16,7 +16,7 @@ $client->addScope("https://www.googleapis.com/auth/drive.metadata.readonly");
 $client->addScope("https://www.googleapis.com/auth/drive.metadata");
 $client->addScope("https://www.googleapis.com/auth/drive.photos.readonly");
 //$redirect_uri = 'http://127.0.0.1/cloud/login.php';
-$redirect_uri = "http://php-matias-prueba11.44fs.preview.openshiftapps.com/index.php";
+$redirect_uri = "http://php-matias-prueba11.44fs.preview.openshiftapps.com";
 $client->setRedirectUri($redirect_uri);
 
 if (!isset($_GET['code'])) {
